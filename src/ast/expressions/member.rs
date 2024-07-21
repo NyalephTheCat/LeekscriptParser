@@ -1,5 +1,5 @@
 use derive_more::Display;
-use nom::{branch::alt, combinator::map, multi::{many0, separated_list0}, sequence::{delimited, pair, preceded}, IResult};
+use nom::{branch::alt, bytes::complete::tag, combinator::map, multi::{many0, separated_list0}, sequence::{delimited, pair, preceded}, IResult};
 use crate::{ast::*, utils::kw};
 use nom::character::complete::char;
 
@@ -43,6 +43,7 @@ pub enum MemberRight {
     Dot(MetaNode<IdentifierOrMember>),
     Bracket(MetaNode<Expression>),
     Call(Vec<MetaNode<Expression>>),
+    NotNull,
 }
 
 impl Display for MemberRight {
@@ -61,7 +62,8 @@ impl Display for MemberRight {
                 }
 
                 write!(f, ")")
-            }
+            },
+            MemberRight::NotNull => write!(f, "!"),
         }
     }
 }
@@ -82,6 +84,7 @@ impl ParseInto for MemberRight {
                 separated_list0(char(','), Expression::parse),
                 char(')'),
             ), MemberRight::Call),
+            map(tag("!"), |_| MemberRight::NotNull),
         ))(input)
     }
 }
@@ -157,9 +160,17 @@ mod tests {
     }
 
     #[test]
+    fn test_not_null() {
+        test_remains_same::<Member, _>("a!", "a!");
+        test_remains_same::<Member, _>("a.b!", "a.b!");
+        test_remains_same::<Member, _>("a[1]!", "a[1]!");
+        test_remains_same::<Member, _>("a(1, 2)!", "a(1, 2)!");
+    }
+
+    #[test]
     fn test_complex() {
-        test_remains_same::<Member, _>("a.b[1].c(1, 2)", "a.b[1].c(1, 2)");
-        test_remains_same::<Member, _>("a.b[1].c(1, 2).d", "a.b[1].c(1, 2).d");
+        test_remains_same::<Member, _>("a.b[1].c(1, 2)!", "a.b[1].c(1, 2)!");
+        test_remains_same::<Member, _>("a.b[1].c(1, 2)!.d", "a.b[1].c(1, 2)!.d");
     }
 
     #[test]
