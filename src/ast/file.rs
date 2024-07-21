@@ -1,4 +1,4 @@
-use nom::{combinator::map, multi::many0, sequence::pair, IResult};
+use nom::{combinator::{eof, map}, multi::many0, sequence::{pair, terminated}, IResult};
 
 use crate::ast::*;
 
@@ -22,7 +22,7 @@ impl ParseInto for File {
 
     fn parse_inner<'a>(input: Span<'a>) -> IResult<Span<'a>, Self::Output> {
         map(
-            pair(many0(GlobalStatement::parse), Empty::parse),
+            terminated(pair(many0(GlobalStatement::parse), Empty::parse), eof),
             |(statements, eof)| File { statements, eof },
         )(input)
     }

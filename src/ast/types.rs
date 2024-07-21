@@ -65,55 +65,42 @@ impl ParseInto for Type {
 
 #[cfg(test)]
 mod tests {
+    use crate::utils::test_remains_same;
+
     use super::*;
 
-    fn parses_self(input: &str) {
-        parses_to(input, input);
-    }
-
-    fn parses_to(input: &str, expected: &str) {
-        let (remaining, result) = Type::parse(Span::new(input)).unwrap();
-        let output = result.to_string();
-        
-        // Try and parse again to ensure the output is the same
-        let (_, result) = Type::parse(Span::new(&output)).unwrap();
-        let output2 = result.to_string();
-
-        assert_eq!(output, expected);
-        assert_eq!(output2, expected);
-
-        assert!(remaining.is_empty());
+    #[test]
+    fn test_simple_type() {
+        test_remains_same::<Type, _>("String", "String");
     }
 
     #[test]
-    fn test_simple() {
-        parses_self("Foo");
+    fn test_generic_type() {
+        test_remains_same::<Type, _>("Vec<String>", "Vec<String>");
     }
 
     #[test]
-    fn test_generics() {
-        parses_self("Foo<Bar>");
-        parses_self("Foo<Bar, Baz>");
-        parses_self("Foo<Bar, Baz, Qux>");
+    fn test_multiple_generics() {
+        test_remains_same::<Type, _>("HashMap<String, String>", "HashMap<String, String>");
     }
 
     #[test]
-    fn test_alternative() {
-        parses_self("Foo|Bar");
-        parses_self("Foo<Bar>|Baz");
-        parses_self("Foo<Bar, Baz>|Qux");
+    fn test_nullable_type() {
+        test_remains_same::<Type, _>("String?", "String?");
     }
 
     #[test]
-    fn test_nullable() {
-        parses_self("Foo?");
-        parses_self("Foo<Bar>?");
-        parses_self("Foo<Bar, Baz>?");
-        parses_self("Foo<Bar, Baz>|Qux?");
+    fn test_alternative_type() {
+        test_remains_same::<Type, _>("String|Vec<String>", "String|Vec<String>");
     }
 
     #[test]
-    fn test_complex() {
-        parses_self("Foo<Bar, Baz>|Qux<Bar, Baz>?");
+    fn test_complex_type() {
+        test_remains_same::<Type, _>("HashMap<String, String>|Vec<String>|String?", "HashMap<String, String>|Vec<String>|String?");
+    }
+
+    #[test]
+    fn test_complex_type_with_generics() {
+        test_remains_same::<Type, _>("HashMap<String, String>|Vec<String>|String?|Vec<HashMap<String, String>>", "HashMap<String, String>|Vec<String>|String?|Vec<HashMap<String, String>>");
     }
 }

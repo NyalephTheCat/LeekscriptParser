@@ -16,7 +16,7 @@ pub fn kw<'a>(keyword: &'a str) -> impl FnMut(Span<'a>) -> IResult<Span<'a>, Spa
 }
 
 pub fn test_remains_same<T: ParseInto<Output = U>, U: Display + Debug>(input: &str, expected: &str) {
-    let input = Span::new(input);
+    let input = Span::new_extra(input, "test_input");
     let parse_result = T::parse_inner(input);
 
     assert!(parse_result.is_ok(), "Expected successful parse for {}, got {:?}", input, parse_result);

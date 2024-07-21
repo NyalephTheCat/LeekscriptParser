@@ -9,14 +9,13 @@ fn main() -> Result<()> {
     // Read the content of the file into a string
     let file_content = fs::read(file)?;
     let file_content = String::from_utf8(file_content).unwrap();
-    let span = Span::new(&file_content);
+    let span = Span::new_extra(&file_content, file);
 
     let result = File::parse(span);
 
     match result {
-        Ok((rem, file)) => {
+        Ok((_, file)) => {
             println!("{:#?}", file);
-            println!("{:?}", rem);
             println !("\n----------------------------\n{}", file);
         }
         Err(e) => {

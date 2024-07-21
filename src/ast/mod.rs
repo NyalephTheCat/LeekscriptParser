@@ -2,7 +2,7 @@ use std::fmt::{Debug, Display};
 use derive_builder::Builder;
 use nom::combinator::map;
 
-pub type Span<'a> = nom_locate::LocatedSpan<&'a str>;
+pub type Span<'a> = nom_locate::LocatedSpan<&'a str, &'a str>;
 
 pub trait ParseInto: Sized where <Self as ParseInto>::Output: From<Self> {
     type Output;
